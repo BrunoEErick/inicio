@@ -1,0 +1,26 @@
+import pandas as pd
+
+class Banco_Dados:
+    def __init__(self):
+        base = pd.read_excel(r'C:\Users\usuario_000\Desktop\basededdados.xlsx')
+        base.drop('ID_Pedido',axis=1,inplace=True)
+    
+        self.Previsões()
+        self.Gráficos()
+        self.SqlLite()
+        self.Visualizar(base) 
+         
+    def Previsões(self):
+        pass
+    def Gráficos(self):
+        pass
+    def SqlLite(self):
+        pass
+    def Visualizar(self,base):
+
+        pedido = base['Data_Pedido'] 
+        pedido_index = base.set_index([pedido])
+        filtro = pedido_index.loc['2019-2-4':'2020-3-31']
+      
+        print(filtro)
+        
