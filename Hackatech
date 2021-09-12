@@ -1,0 +1,183 @@
+import PySimpleGUIQt as sg
+from PySimpleGUIQt.PySimpleGUIQt import Window, theme, theme_background_color
+import pandas as pd
+import matplotlib.pyplot as plt
+from sqlalchemy import create_engine
+from sqlalchemy.engine import interfaces
+from sqlalchemy.types import Text, Numeric
+import psycopg2
+ 
+class Tech:
+    
+    def __init__(self):
+        sg.theme('reddit')
+ 
+        login = [
+                
+        [sg.Image(r'C:\Users\bruno_000\Desktop\logo.jpg', size=(100,100))],
+        [sg.Text('Usuário: '), sg.Input(key='usuario', size=(250,25))],
+        [sg.Text('Senha:'), sg.Input(key='senha', size=(250,25), password_char='*')],
+        [sg.Radio('Aluno', "RADIO1", default=True, key='radio1'),sg.Radio('Instituição', "RADIO1",key='radio2')],
+        [sg.Button('Entrar'), sg.Button('Cadastrar-se')]
+                            
+        ]
+        login = sg.Window('Login',login)
+        while True:
+            event,values = login.read()
+            if event == 'Entrar':
+                if values['usuario'] == 'aluno' and values['senha'] == '123aluno' and values['radio1'] == True:
+                    sg.popup('Interface não programada :/')
+                if values['usuario'] == 'tech' and values['senha'] == '123tech' and values['radio2'] == True:
+                    login.close()
+                    self.Interface_Instituicao()
+        
+    def Interface_Instituicao(self):# Interface da instituição
+ 
+        sg.theme('reddit')
+        importar_dados = [[sg.Output(size=(80,10))]]
+        interface = [ 
+ 
+        [sg.Image(r'C:\Users\bruno_000\Desktop\logo_001.png', size = (30,30)), sg.Text('  Universidade Federal do Ceará',font=(70,25),size=(510,35)), sg.Image(r'C:\Users\bruno_000\Desktop\logo_001.png', size = (30,30))],
+        [sg.Button('Importar dados de projeções',size=(510,35)),sg.VerticalSeparator(pad=None),sg.Image(r'C:\Users\bruno_000\Desktop\import_base.png', size = (80,30))],
+        [sg.Button('Importar dados de rendimento',size=(510,35)),sg.VerticalSeparator(pad=None),sg.Image(r'C:\Users\bruno_000\Desktop\import_proj.png', size = (80,30))],
+        [sg.Button('Exportar relatório',size=(510,35)),sg.VerticalSeparator(pad=None),sg.Image(r'C:\Users\bruno_000\Desktop\import_relat.png', size = (80,30))],
+        [sg.Button('Exportar projeções', size=(510,35)),sg.VerticalSeparator(pad=None),sg.Image(r'C:\Users\bruno_000\Desktop\import_config.png', size = (80,30))],
+        [sg.Button('Gráfico de rendimento',size=(510,35)),sg.VerticalSeparator(pad=None),sg.Image(r'C:\Users\bruno_000\Desktop\import_mensa.png', size = (80,30))],
+        [sg.TabGroup([[sg.Tab('Visualizar dados', importar_dados)]])]
+        
+        ]
+        interface = sg.Window('Hackatech',interface)
+       
+        while True:
+            
+            event,values = interface.read()
+ 
+            if event == 'Importar dados de projeções':
+                
+                local = self.Importar_dados(interface)
+                excel = pd.read_excel(r'{}'.format(local))
+                print(excel)
+ 
+            if event == 'Importar dados de rendimento':
+               
+                local_R = self.Importar_Rendimento(interface)
+                base = pd.read_excel(r'{}'.format(local_R))
+                self.Banco_SQL(base)
+                self.Grafico_SQL(base)
+ 
+            if event == 'Importar dados de rendimento':
+                
+                local_R = self.Importar_Rendimento(interface)
+                base = pd.read_excel(r'{}'.format(local_R))
+                self.Banco_SQL(base)
+                self.Grafico_SQL(base)
+ 
+            if event == 'Exportar projeções':
+                sg.popup('Opção não programada :/')
+                interface.close()
+                self.Interface_Instituicao()
+ 
+            if event == 'Exportar relatório':
+                sg.popup('Opção não programada :/')
+                interface.close()
+                self.Interface_Instituicao()
+        
+            if event == 'Gráfico de rendimento':
+                sg.popup('Opção não programada :/')
+                interface.close()
+                self.Interface_Instituicao()
+ 
+            if event == sg.WINDOW_CLOSED:
+                break
+ 
+                
+            
+    def Importar_dados(self, interface): #Importar as notas dos alunos
+ 
+        sg.theme('reddit')
+        
+        layout = [ 
+        [sg.Text('Selecione o local do arquivo: Em formato excel')],
+        [sg.Input(key = 'banc', size=(300,25)),sg.FileBrowse('Buscar', size=(80,30))],
+        [sg.Button('confirmar', size = (80,30))]
+ 
+        ]
+                
+        interface1 = sg.Window('Importar base de dados',layout)
+        while True:
+           
+            event,values = interface1.read()     
+            if event == sg.WINDOW_CLOSED:
+                interface.close()
+                self.Interface_Instituicao()
+                
+            
+            if event == 'confirmar':
+                banc_ = values['banc']
+                return banc_
+           
+        
+        
+    def Importar_Rendimento(self, interface): #Ler o endereço do arquivo
+ 
+        sg.theme('reddit')
+        
+        layout = [ 
+        [sg.Text('Selecione o local do arquivo: Em formato excel')],
+        [sg.Input(key = 'banc', size=(300,25)),sg.FileBrowse('Buscar', size=(80,30))],
+        [sg.Button('confirmar', size = (80,30))]
+ 
+        ]
+                
+        interface1 = sg.Window('Importar base de dados',layout)
+        
+ 
+        while True:
+            event,values = interface1.read()
+            if event == sg.WINDOW_CLOSED:
+                
+                interface.close()
+                self.Interface_Instituicao()
+ 
+            if event == 'confirmar':
+                
+                banc_r = values['banc']
+                return banc_r
+ 
+    def Grafico_SQL(self,base): #Gerar o gráfico
+        
+        x = base['periodo']
+        y = base['resultado']
+ 
+        plt.plot(x,y)
+        plt.show()
+ 
+    def Banco_SQL(self, dados): #Importa o arquivo para um banco SQL
+ 
+        conn = psycopg2.connect(
+        database = 'inicio',
+        user = 'postgres',
+        password = 'password',
+        host = 'localhost',
+        port = '5432'
+        )
+ 
+        conexao = {'database': 'inicio','user': 'postgres','password':'password', 'host':'localhost', 'port':'5432'}
+        relacao_conexao = 'postgresql+psycopg2://'+conexao['user']+':'+conexao['password']+'@'+conexao['host']+':'+conexao['port']+'/'+conexao['database']
+        engine = create_engine(relacao_conexao)
+ 
+        table_name = 'Tabela de rendimentos'
+ 
+        dados.to_sql(
+        table_name,
+        engine,
+        if_exists='replace',
+        dtype = {
+        'periodo': Text,
+        'resultado': Numeric 
+        })
+        table_df = pd.read_sql_table(table_name, con = engine)
+        
+    
+Tech()  
+
